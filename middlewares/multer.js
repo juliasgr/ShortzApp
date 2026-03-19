@@ -5,8 +5,7 @@ const path = require('path');
 // Configuração de onde e como salvar os arquivos
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'public/uploads/profiles/'); // Pasta de destino
-    },
+cb(null, 'public/uploads/avatars/');    },
     filename: (req, file, cb) => {
         // Nome único: id_usuario + timestamp + extensão original
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);

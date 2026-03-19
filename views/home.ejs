@@ -40,8 +40,7 @@
                 <div class="dropdown">
                     <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" id="dropdownUser"
                         data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="<%= user.profilePicture ? '/uploads/profiles/' + user.profilePicture : '/images/default-profile.png' %>" 
-                            alt="mdo" width="32" height="32" class="bg-secondary">
+<img src="<%= user.profilePicture ? '/uploads/avatars/' + user.profilePicture : '/images/default-profile.png' %>"                            alt="mdo" width="32" height="32" class="bg-secondary">
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end text-small shadow border-0 mt-2" aria-labelledby="dropdownUser">
                         <li><a class="dropdown-item py-2" href="/profile/edit"><i class="bi bi-person me-2"></i> Ver

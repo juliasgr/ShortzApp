@@ -31,6 +31,14 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING(100),
     allowNull: false
   },
+  
+  bio: {
+    type: DataTypes.STRING
+  },
+
+  profilePicture: {
+    type: DataTypes.STRING
+  }
 
 },
 {
