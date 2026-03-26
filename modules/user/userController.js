@@ -60,12 +60,9 @@ exports.login = async (req, res) => {
          return res.redirect('/login');
       }
 
-      // 3. Criar a sessão do usuário
-      req.session.user = {
-         id: user.id,
-         username: user.username,
-         email: user.email
-      };
+     // 3. Criar a sessão do usuário
+const userData = await this.getProfile(user.id);
+req.session.user = userData;
 
       // 4. Redirecionar para o feed
       res.redirect('/feed');
@@ -117,6 +114,9 @@ if (err) console.error('Erro ao apagar foto de perfil antiga:', err);
 else console.log('Foto de perfil antiga apagada:', oldProfilePicPath);
 });
 }
+// Atualiza os dados do usuário na sessão para refletir as mudanças imediatamente
+const userData = await this.getProfile(userId);
+req.session.user = userData;
 req.flash("success", "Perfil atualizado com sucesso!");
 res.redirect("/profile/edit");
 } catch (error) {
