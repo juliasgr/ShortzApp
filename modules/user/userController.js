@@ -1,5 +1,7 @@
 const User = require('./userModel');
 const bcrypt = require('bcryptjs');
+const fs = require("fs"); 
+const path = require("path");
 
 exports.register = async (req, res) => {
     const { username, email, password, confirmPassword, fullname } = req.body;
@@ -95,25 +97,31 @@ exports.getProfile = async (userId) => {
 };
 
 exports.updateProfile = async (req, res) => {
-    try {
-        const { fullName, bio } = req.body;
-        const userId = req.session.user.id;
-
-        const updateData = { fullName, bio };
-
-        // Se um arquivo foi enviado pelo Multer, ele estará em req.file
-        if (req.file) {
-            updateData.profilePicture = req.file.filename;
-        }
-
-        await User.update(updateData, { where: { id: userId } });
-
-        req.flash('success', 'Perfil atualizado com sucesso!');
-        res.redirect('/profile/edit');
-
-    } catch (error) {
-        console.error(error);
-        req.flash('error', 'Erro ao atualizar perfil.');
-        res.redirect('/profile/edit');
-    }
+try {
+const { fullName, bio } = req.body;
+const userId = req.session.user.id;
+const updateData = { fullName, bio };
+// Se um arquivo foi enviado pelo Multer, ele estará em req.file
+if (req.file) {
+updateData.profilePicture = req.file.filename;
+}
+// [ADICIONAR] Buscar o usuário antes de atualizar para obter o nome da foto de perfil antiga
+const oldUser = await User.findByPk(userId);
+await User.update(updateData, { where: { id: userId } });
+// [ADICIONAR] Se uma nova foto foi enviada e o usuário tinha uma foto anterior (não a default),
+// apagar a foto antiga do sistema de arquivos.
+if (req.file && oldUser.profilePicture && oldUser.profilePicture !== 'default-profile.png') {
+const oldProfilePicPath = path.join(__dirname, '../../public/uploads/profiles', oldUser.profilePicture);
+fs.unlink(oldProfilePicPath, (err) => {
+if (err) console.error('Erro ao apagar foto de perfil antiga:', err);
+else console.log('Foto de perfil antiga apagada:', oldProfilePicPath);
+});
+}
+req.flash("success", "Perfil atualizado com sucesso!");
+res.redirect("/profile/edit");
+} catch (error) {
+console.error(error);
+req.flash("error", "Erro ao atualizar perfil.");
+res.redirect("/profile/edit");
+}
 };
