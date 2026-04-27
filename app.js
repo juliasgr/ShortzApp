@@ -14,8 +14,6 @@ var usersRouter = require('./routes/users');
 var userRoutes = require("./modules/user/userRoutes");
 var videoRoutes = require("./modules/video/videoRoutes");
 
-var app = express();
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views/pages'));
 app.set('layout', path.join(__dirname, 'views/layouts/main'));
@@ -62,13 +60,16 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-//Tentar conectar ao banco de dados
-const sequelize = require('./config/database');
-const user = require('./modules/user/userModel');
+// Banco de dados
+const sequelize = require("./config/database");
+const User = require("./modules/user/userModel");
 const Video = require("./modules/video/videoModel");
-sequelize.sync({alter: true})
-//sequelize.authenticate()
-  //.then ( () => console.log('Conexão ok'))
- // .catch (erro=> console.log('Erro de conexão: ', erro));
+
+
+// Sincronização
+sequelize.sync({ alter: true })
+  .then(() => console.log("Banco de dados sincronizado!"))
+  .catch(err => console.error("Erro ao sincronizar banco:", err));
 
 module.exports = app;
+
