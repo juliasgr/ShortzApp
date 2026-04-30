@@ -1,3 +1,5 @@
+const { DataTypes } = require("sequelize"); // [ADICIONAR no início do arquivo]
+const sequelize = require("../../config/database"); // [ADICIONAR no início do arquivo]
 const Video = require("./videoModel");
 const User = require("../user/userModel");
 
@@ -89,22 +91,39 @@ limit: 20
 return videos;
 };
 exports.renderVideoPage = async (req, res) => {
-const videoId = req.params.id;
-try {
-const video = await Video.findByPk(videoId, {
-include: [{
-model: User,
-attributes: ["id", "username", "fullName", "profilePicture"]
-}]
-});
-if (!video) {
-req.flash("error", "Vídeo não encontrado.");
-return res.redirect("/feed");
-}
-res.render("video", { title: video.title, video });
-} catch (error) {
-console.error("Erro ao carregar a página do vídeo:", error);
-req.flash("error", "Erro ao carregar o vídeo. Tente novamente.");
-res.redirect("/feed");
-}
+    const videoId = req.params.id;
+
+    try {
+        const video = await Video.findByPk(videoId, {
+            include: [{
+                model: User,
+                attributes: ["id", "username", "fullName", "profilePicture"]
+            }],
+            attributes: {
+                include: [
+                    [sequelize.literal("(SELECT COUNT(*) FROM `likes` WHERE `likes`.`video_id` = `Video`.`id`)"), "likesCount"],
+                    [sequelize.literal("(SELECT COUNT(*) FROM `comments` WHERE `comments`.`video_id` = `Video`.`id`)"), "commentsCount"]
+                ]
+            }
+        });
+
+        if (!video) {
+            req.flash("error", "Vídeo não encontrado.");
+            return res.redirect("/feed");
+        }
+
+        let isLiked = false;
+        if (req.session.user) {
+            const userId = req.session.user.id;
+            const Like = require("../like/likeModel"); // Importa o modelo Like aqui para evitar circular dependency
+            const existingLike = await Like.findOne({ where: { userId, videoId } });
+            isLiked = !!existingLike;
+        }
+
+        res.render("video", { title: video.title, video, isLiked });
+    } catch (error) {
+        console.error("Erro ao carregar a página do vídeo:", error);
+        req.flash("error", "Erro ao carregar o vídeo. Tente novamente.");
+        res.redirect("/feed");
+    }
 };
